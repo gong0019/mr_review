@@ -54,6 +54,47 @@ Use it to probe for language-specific failure modes after building full changed-
 - Check integration, compatibility, rollout order, and verification gaps
 - Never claim full MR review unless the entire changed-file set was covered
 
+## Dynamic file mapping checks
+
+When the MR adds or changes any dynamic type-to-file behavior, treat file-mapping completeness as a required review dimension, not an optional follow-up.
+
+This applies to cases such as:
+
+- new `type` or `action` values
+- new export, print, document, template, view, page, notification, report, or render modes
+- string-built paths
+- template or view name mapping tables
+- conditional includes, renders, imports, or loaders
+- config-driven file selection
+
+For these changes, explicitly check all of the following:
+
+1. Entry is reachable
+   Confirm the new type is actually allowed by routing, whitelist checks, enums, config, permissions, and branch conditions.
+
+2. Target files exist
+   If code can dispatch to a file by convention, mapping, or string concatenation, verify the corresponding physical file exists.
+
+3. File content matches the new scenario
+   Do not stop at file existence. Check whether the file content is actually adapted for the new type instead of being an unchecked copy.
+
+4. Rendered variables are supplied
+   For templates/views/documents, trace every newly relevant variable back to the data-preparation layer and verify it is really populated.
+
+5. End-to-end chain is closed
+   Review the full path from type declaration to data assembly to file selection to render/output, and flag any broken link.
+
+6. Similar implementations are aligned
+   Compare against sibling implementations to detect missing files, missing links, stale titles, stale labels, wrong field usage, or mismatched output structure.
+
+Treat the following as high-priority confirmed bugs when supported by code evidence:
+
+- code opens a new type but the target file is missing
+- file exists but still contains another type's title, labels, fields, or assumptions
+- template expects variables that are not populated on the active render path
+- render path is partially wired, so generation succeeds for some assets but fails for others
+- a copied template produces structurally wrong output for the new type even though it does not crash
+
 ## Output contract
 
 Follow `references/report-format.md`.
