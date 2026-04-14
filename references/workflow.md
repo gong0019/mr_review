@@ -63,9 +63,18 @@ For every changed file, run `git diff master..stage -- <file>` and review the fu
 - Confirm new logic is registered in the right place: route table, service container, event map, template include, build manifest, permissions list, or feature flag config
 - Check whether the new path conflicts with an older path, stale cache key, duplicate selector, or shadowed branch that prevents it from running
 
+### Duplicate logic and parallel implementations
+
+- When new functions, helpers, mappers, or handlers are added, search for existing logic that already implements the same business rule
+- Verify the MR extends the canonical implementation instead of creating a second divergent path
+- Flag duplicated business logic when future fixes would need to be applied in multiple places or when different callers may now use inconsistent implementations
+
 ### Contract and compatibility review
 
 - When fields are renamed or removed, verify all producers and consumers were updated together
+- For every changed output, payload, query result, mapped object, or derived field, verify downstream consumers still read the same shape and meaning
+- Check field presence, naming, type, default-value semantics, units, enum meanings, and collection shape
+- Flag cases where data is produced in one format but consumed as another, even if the code does not immediately throw
 - When defaults change, verify old stored data, old requests, and partially rolled-out nodes still behave safely
 - When a change depends on migration order, deployment order, or cache invalidation, confirm the rollout sequence is safe and reversible
 
