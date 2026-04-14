@@ -8,6 +8,19 @@ Use it to strengthen review coverage for language-specific failure modes that ar
 Do not treat this file as a whitelist of what to review.
 Absence of these patterns does not reduce the requirement to review the full changed-file set, related call paths, and cross-file impacts.
 
+## How to use this checklist
+
+Every language-specific check must be validated in execution context, not by pattern match alone.
+
+For each matched pattern:
+
+- read upward to the defining assignment, guard, or input source
+- read downward to the final consumer, branch outcome, or side effect
+- check whether the same business rule appears in sibling files or parallel code paths
+- confirm the issue is introduced by the current MR, not only a suspicious syntax pattern
+
+Do not report a finding from this checklist unless the surrounding control flow, data flow, and integration impact were reviewed.
+
 ## PHP-specific checks
 
 - **Membership checks with loose comparison**
