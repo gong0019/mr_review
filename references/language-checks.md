@@ -24,7 +24,7 @@ Do not report a finding from this checklist unless the surrounding control flow,
 ## PHP-specific checks
 
 - **Membership checks with loose comparison**
-  Common trigger: `in_array($val, $arr)` without strict mode. When the needle could be `0`, `false`, or `""`, verify whether `in_array($val, $arr, true)` is required.
+  Common trigger: `in_array($val, $arr)` without strict mode. Do not assume strict mode is always required. When the needle could be `0`, `false`, `""`, or loose comparison may change business behavior, verify whether `in_array($val, $arr, true)` is actually needed.
 - **Membership checks across semantic layers**
   Common trigger: `in_array` where the needle and haystack may represent different domains such as IDs, status values, or labels. Confirm both sides are from the same semantic layer.
 - **Config key renames and compatibility drift**

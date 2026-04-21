@@ -30,6 +30,15 @@ Before diving into per-file details, classify the MR by change surface and make 
 
 For every changed file, run `git diff master..stage -- <file>` and review the full context:
 
+### Preconditions before conclusions
+
+- Before calling something a confirmed bug, verify that the triggering precondition is reachable through the real business entry path, not only through a locally imaginable state
+- For user flows such as add-to-cart, checkout, login merge, queue handling, refunds, and document generation, trace the primary entry function first and confirm how the relevant data is actually created, merged, or deduplicated
+- Do not treat cleanup code, fallback code, repair code, or historical-data handling as proof that the same state is produced by the mainline path
+- If a suspicious state is only reachable through legacy rows, abnormal interruptions, manual data edits, or secondary repair flows, downgrade it to `Risks / Edge Cases` unless the MR itself makes that state newly user-reachable
+- When a finding depends on assumptions like duplicate cart rows, missing mappings, repeated submissions, or partially initialized state, explicitly verify whether the upstream guards or dedupe logic already prevent that condition in normal operation
+- In short: verify `precondition reachable` before asserting `bug confirmed`
+
 ### Variable lifecycle tracking
 
 - Identify all variables involved in the change
@@ -137,3 +146,43 @@ Use multiple review agents in parallel when the MR is large, cross-domain, or li
 - Remove issues that are pre-existing on the base branch
 - Re-check any finding that depends on business assumptions before marking it confirmed
 - The final MR review must be the merged result of local review plus parallel review
+
+## Step 4-B — Context reader agent
+
+Run one context reader agent in parallel with the main per-file review whenever the diff crosses a layer boundary.
+
+See `references/context-reader.md` for the full agent instructions.
+
+### Trigger
+
+Spawn the context reader agent when the diff contains any of the following:
+
+- JS that reads DOM elements, data attributes, or hidden fields rendered by PHP
+- PHP variables rendered into HTML consumed by JS show/hide or calculation logic
+- Removed functions, event listeners, or variables that may still have live dependents
+- Conditional display logic driven by server-rendered values
+- A new identifier (DOM ID, hidden field, CSS class, function name) that crosses a file boundary
+
+### Main reviewer preparation
+
+Before spawning, extract a target list from the diff:
+
+- DOM IDs and class names referenced in JS
+- Hidden field `name` attributes read by JS
+- PHP variables rendered into HTML
+- JS init functions or cross-file calls
+- Removed named blocks (functions, listeners, variables)
+
+Pass the target list explicitly in the agent prompt alongside the commit range.
+
+### Parallelism
+
+Spawn the context reader agent at the same time as other parallel domain reviewers.
+Do not wait for context reader output before starting per-file review.
+
+### Merge rule
+
+- Treat context reader findings as additional evidence, not as a separate review section
+- Promote a context reader finding to `Confirmed Bug` only after verifying the cross-layer assumption holds in the actual runtime path
+- Downgrade to `Risks / Edge Cases` if the scenario requires an unusual user action or partial rollout state
+- Do not forward context reader output verbatim; synthesize it into the final report

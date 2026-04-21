@@ -33,6 +33,7 @@ Use this order:
 2. read `references/workflow.md`
 3. read `references/report-format.md`
 4. read `references/language-checks.md` only when the MR includes PHP or JavaScript
+5. read `references/context-reader.md` only when spawning a context reader agent (see workflow Step 4-B)
 
 `references/language-checks.md` is a supplemental high-risk checklist, not a limit on review scope.
 Use it to probe for language-specific failure modes after building full changed-file coverage, not as a substitute for complete review.
@@ -111,3 +112,4 @@ The final output must contain:
 - `references/workflow.md`
 - `references/report-format.md`
 - `references/language-checks.md`
+- `references/context-reader.md`
